@@ -78,11 +78,15 @@
           class="w-full bg-black border-2 border-sky-500 rounded-full px-5 py-4 pr-14 text-lg placeholder-sky-700 focus:outline-none focus:border-sky-400"
         />
         <button
-          onclick="togglePassword()"
-          class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl"
-        >
-          👁️
-        </button>
+  onclick="togglePassword()"
+  class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+>
+  <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+</button>
+
       </div>
 
       <p class="text-sky-500 mt-4 cursor-pointer">Forgot password?</p>
